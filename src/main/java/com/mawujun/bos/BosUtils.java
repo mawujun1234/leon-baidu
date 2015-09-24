@@ -27,12 +27,18 @@ public class BosUtils {
 	static Logger logger=LogManager.getLogger(BosUtils.class);
 	static Properties baidu_pps;
 	static BosClient client ;
+	static {
+		init("baidu.properties");//默认初始化baidu.properties文件
+	}
 	/**
 	 * 初始化百度的bos工具类
 	 * @author mawujun email:160649888@163.com qq:16064988
 	 * @param properties_file
 	 */
 	public static void init(String properties_file){
+		if(client!=null){
+			return;
+		}
 		try {
 		if(properties_file==null){
 			throw new NullPointerException("baidu。properties路径必须先指定!");
@@ -97,16 +103,27 @@ public class BosUtils {
 	 * @param objectKey fun/movie/001.avi,fun/movie/007.avi,fun/test.jpg
 	 * @param filepath
 	 */
-	public static void putObject(String bucketName,String objectKey,String filepath) {   
+	public static void putObject(String bucketName,String objectKey,String filepath) { 
+		 InputStream inputStream=null;
 		try {
 			// 获取数据流
-			 InputStream inputStream = new FileInputStream(filepath);
+			 inputStream = new FileInputStream(filepath);
 			 // 以数据流形式上传Object
 		    PutObjectResponse putObjectResponseFromInputStream = client.putObject(bucketName, objectKey, inputStream);	
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			logger.error("{}文件不存在。",filepath);
+		} finally {
+			if(inputStream!=null){
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 		}
 	    
 	}
@@ -184,6 +201,7 @@ public class BosUtils {
 	}
 	/**
 	 * 用户可以通过如下代码获取指定Object的URL
+	 * 用户在调用该函数前，需要手动设置endpoint为所属Region域名。
 	 * @author mawujun email:160649888@163.com qq:16064988
 	 * @param client
 	 * @param bucketName
@@ -191,7 +209,7 @@ public class BosUtils {
 	 * @param expirationInSeconds 为指定的URL有效时长，时间从当前时间算起，为可选参数，不配置时系统默认值为1800秒。如果要设置为永久不失效的时间，可以将expirationInSeconds参数设置为 -1，不可设置为其他负数。
 	 * @return
 	 */
-	public String generatePresignedUrl(String bucketName, String objectKey, int expirationInSeconds) {
+	public static String generatePresignedUrl(String bucketName, String objectKey, int expirationInSeconds) {
 
 		   URL url = client.generatePresignedUrl(bucketName, objectKey, expirationInSeconds);          
 

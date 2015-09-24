@@ -1,0 +1,2 @@
+1:一定要加上baidu的sdk以来的jar包
+2：使用的时候只要把baidu.properties文件拷贝过去就可以了
